@@ -1,4 +1,3 @@
-{-# LANGUAGE RecordWildCards, BangPatterns, ViewPatterns, LambdaCase, TupleSections, PatternGuards, FlexibleContexts, NoMonomorphismRestriction, PartialTypeSignatures #-}
 
 module Main where
 
