@@ -1,3 +1,4 @@
+{-# LANGUAGE RecordWildCards, BangPatterns, ViewPatterns, LambdaCase, TupleSections, PatternGuards, FlexibleContexts, NoMonomorphismRestriction, PartialTypeSignatures #-}
 
 import Text.Parsec (choice, (<|>), try, eof, many, ParseError, skipMany1, sepBy, endBy, endBy1,
                             sepEndBy, sepEndBy1, eof, notFollowedBy, manyTill, between, space)
