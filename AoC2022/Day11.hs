@@ -1,7 +1,6 @@
 type Parser = Parsec Void Text
 
 data Monkey = Monkey {_num :: Int, _item :: [Int], _operation :: Int -> Int, _divisBy :: Int, _toThrow :: Bool -> Int}
-
 makeLenses ''Monkey 
 
 parseEQ :: Parser (Int -> Int)
