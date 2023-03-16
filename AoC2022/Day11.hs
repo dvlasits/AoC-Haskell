@@ -21,7 +21,7 @@ parseMonkey = do
 doItem :: Int -> Monkey -> Int -> State (Map Int Monkey) ()
 doItem modBy (Monkey {..}) oneItem = ix newMonkey . item %= (++ [afterWorry])
             where
-                afterWorry = _operation oneItem `mod` modBy-- `div` 3
+                afterWorry = _operation oneItem `mod` modBy --`div` 3
                 newMonkey =  _toThrow ((afterWorry `rem` _divisBy) == 0)
 
 doStep :: Int -> Int -> State (Map Int Monkey) (Int, Int)
