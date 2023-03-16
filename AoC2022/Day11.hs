@@ -1,34 +1,14 @@
 type Parser = Parsec Void Text
 
-data Monkey = Monkey {
-    _num :: Int,
-    _item :: [Int],
-    _operation :: Int -> Int,
-    _divisBy :: Int,
-    _toThrow :: Bool -> Int
-}
+data Monkey = Monkey {_num :: Int, _item :: [Int], _operation :: Int -> Int, _divisBy :: Int, _toThrow :: Bool -> Int}
 
 makeLenses ''Monkey 
 
-skip :: Parser ()
-skip = void $ many (noneOf ['\n']) *> newline
-
-skipLetters :: Parser ()
-skipLetters = void $ many letterChar
-
-funcFind :: Parser (Int -> Int)
-funcFind = (id <$ string "old") <|> (const <$> L.decimal)
-
 parseEQ :: Parser (Int -> Int)
 parseEQ = do
-        func1 <- funcFind
-        space
-        op <- ((+) <$ single '+') <|> 
-              (flip subtract <$ single '-') <|>
-              ((*) <$ single '*')
-        space
-        func2 <- funcFind
-        return $ \x -> op (func1 x) (func2 x)
+        op <- (((+) <$ single '+') <|> ((*) <$ single '*')) <* space
+        func <- (id <$ string "old") <|> (const <$> L.decimal)
+        return $ op <*> func
 
 lastInt :: Parser Int
 lastInt = do
@@ -37,15 +17,13 @@ lastInt = do
 
 parseMonkey :: Parser Monkey
 parseMonkey = do
-        num <- string "Monkey " *> L.decimal <* skip
-        let lexeme = L.lexeme (void . optional $ string ", ")
-        items <- string "  Starting items: " *> many (lexeme L.decimal) <* newline
-        op <- string "  Operation: new = " *> parseEQ <* newline
+        num <- string "Monkey " *> L.decimal <* single ':' <* newline 
+        items <- string "  Starting items: " *> (L.decimal `sepBy` string ", ") <* newline
+        op <- string "  Operation: new = old " *> parseEQ <* newline
         divis <- lastInt <* newline
         trueThrow <- lastInt <* newline
         falseThrow <- lastInt
-        let toThrow = bool falseThrow trueThrow
-        return $ Monkey {_num = num, _item = items, _operation = op, _divisBy = divis, _toThrow = toThrow}
+        return $ Monkey num items op divis (bool falseThrow trueThrow)
 
 doItem :: Int -> Monkey -> Int -> State (Map Int Monkey) ()
 doItem modBy (Monkey {..}) oneItem = ix newMonkey . item %= (++ [afterWorry])
@@ -60,7 +38,7 @@ doStep modBy num = do
         ix num . item .= []
         return (num, length $ monkey ^. item)
 
-solve monkeyList = product . take 2 . reverse . sort . M.elems $ M.fromListWith (+) (concat afterRounds)
+solve monkeyList = product . take 2 . reverse . sort . M.elems . M.fromListWith (+) . concat $ afterRounds
         where   
             numMonkeys = length monkeyList
             monkeyMap = M.fromList . zipFrom 0 $ monkeyList
