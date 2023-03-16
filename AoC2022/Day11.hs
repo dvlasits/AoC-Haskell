@@ -73,7 +73,7 @@ solve monkeyList = product . take 2 . reverse . sort . M.elems . M.fromListWith 
         where   
             monkeyMap = M.fromList . zipFrom 0 $ monkeyList
             modBy = productOf (traversed . divisBy) monkeyMap
-            afterRounds = evalState (replicateM 10000 (traverse (doStep modBy) [0..length monkeyList  - 1])) monkeyMap
+            afterRounds = (evalState ?? monkeyMap) . replicateM 10000 . traverse (doStep modBy) $ [0..length monkeyList  - 1]
 
 main = do
     input <- readFile "day11.txt" 
