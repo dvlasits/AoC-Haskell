@@ -1,35 +1,3 @@
-{-# LANGUAGE NoImplicitPrelude, OverloadedStrings, DeriveAnyClass, TemplateHaskell, RecordWildCards #-}
-
-module Main where
-
-import BasePrelude hiding (readFile)
-import Data.List.Split (divvy, splitOn, endBy, splitWhen, splitOneOf, chunksOf)
-import Control.Lens hiding (noneOf)
-import Data.List.Extra (groupSortOn, minimumOn, maximumOn, zipFrom)
-import Control.Monad.Extra (whenM)
-import Data.Map (Map)
-import qualified Data.Map.Strict as M
-import Control.Monad.State
-import qualified Data.Vector.Mutable as VM
-import qualified Data.Vector as V
-import System.Random
-import Data.Functor.Syntax
-import Data.Graph.Inductive (Gr, Node)
-import qualified Data.Graph.Inductive as G
-import Control.Monad.Reader
-import Text.Megaparsec hiding (State, many, some)
-import Text.Megaparsec.Char
-import Data.Void 
-import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Text.Megaparsec.Char.Lexer as L
-import Data.Text.IO hiding (getLine, putStrLn)
-import Control.Lens.Unsound -- adjoin and lensProduct are cool
-import Control.Exception
-import Control.Monad.Except
-import Control.Lens.TH
-import Control.Lens.Traversal
-
 type Parser = Parsec Void Text
 
 data Monkey = Monkey {_num :: Int, _item :: [Int], _operation :: Int -> Int, _divisBy :: Int, _toThrow :: Bool -> Int}
@@ -40,20 +8,14 @@ parseEQ = do
         op <- (((+) <$ single '+') <|> ((*) <$ single '*')) <* space
         func <- (id <$ string "old") <|> (const <$> L.decimal)
         return $ op <*> func
-
-lastInt :: Parser Int
-lastInt = do
-    line <- many (noneOf ['\n'])
-    return . read $ last $ words line
-
+        
 parseMonkey :: Parser Monkey
 parseMonkey = do
         num <- string "Monkey " *> L.decimal <* single ':' <* newline 
         items <- string "  Starting items: " *> (L.decimal `sepBy` string ", ") <* newline
         op <- string "  Operation: new = old " *> parseEQ <* newline
-        divis <- lastInt <* newline
-        trueThrow <- lastInt <* newline
-        falseThrow <- lastInt
+        rest <- T.unpack <$> takeRest
+        let [divis, trueThrow, falseThrow] = fmap (read . last . words) . lines $ rest
         return $ Monkey num items op divis (bool falseThrow trueThrow)
 
 doItem :: Int -> Monkey -> Int -> State (Map Int Monkey) ()
