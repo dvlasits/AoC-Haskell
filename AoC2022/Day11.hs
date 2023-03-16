@@ -1,3 +1,35 @@
+{-# LANGUAGE NoImplicitPrelude, OverloadedStrings, DeriveAnyClass, TemplateHaskell, RecordWildCards #-}
+
+module Main where
+
+import BasePrelude hiding (readFile)
+import Data.List.Split (divvy, splitOn, endBy, splitWhen, splitOneOf, chunksOf)
+import Control.Lens hiding (noneOf)
+import Data.List.Extra (groupSortOn, minimumOn, maximumOn, zipFrom)
+import Control.Monad.Extra (whenM)
+import Data.Map (Map)
+import qualified Data.Map.Strict as M
+import Control.Monad.State
+import qualified Data.Vector.Mutable as VM
+import qualified Data.Vector as V
+import System.Random
+import Data.Functor.Syntax
+import Data.Graph.Inductive (Gr, Node)
+import qualified Data.Graph.Inductive as G
+import Control.Monad.Reader
+import Text.Megaparsec hiding (State, many, some)
+import Text.Megaparsec.Char
+import Data.Void 
+import Data.Text (Text)
+import qualified Data.Text as T
+import qualified Text.Megaparsec.Char.Lexer as L
+import Data.Text.IO hiding (getLine, putStrLn)
+import Control.Lens.Unsound -- adjoin and lensProduct are cool
+import Control.Exception
+import Control.Monad.Except
+import Control.Lens.TH
+import Control.Lens.Traversal
+
 type Parser = Parsec Void Text
 
 data Monkey = Monkey {_num :: Int, _item :: [Int], _operation :: Int -> Int, _divisBy :: Int, _toThrow :: Bool -> Int}
@@ -39,10 +71,9 @@ doStep modBy num = do
 
 solve monkeyList = product . take 2 . reverse . sort . M.elems . M.fromListWith (+) . concat $ afterRounds
         where   
-            numMonkeys = length monkeyList
             monkeyMap = M.fromList . zipFrom 0 $ monkeyList
             modBy = productOf (traversed . divisBy) monkeyMap
-            afterRounds = evalState (replicateM 10000 (traverse (doStep modBy) [0..(numMonkeys - 1)])) monkeyMap
+            afterRounds = evalState (replicateM 10000 (traverse (doStep modBy) [0..length monkeyList  - 1])) monkeyMap
 
 main = do
     input <- readFile "day11.txt" 
