@@ -8,18 +8,13 @@ data Monkey = Monkey {
     _toThrow :: Bool -> Int
 }
 
-instance Show Monkey where
-    show Monkey {_num = id, _item = item} = show (id, item)
-
 makeLenses ''Monkey 
-
 
 skip :: Parser ()
 skip = void $ many (noneOf ['\n']) *> newline
 
 skipLetters :: Parser ()
 skipLetters = void $ many letterChar
-
 
 funcFind :: Parser (Int -> Int)
 funcFind = (id <$ string "old") <|> (const <$> L.decimal)
@@ -52,13 +47,11 @@ parseMonkey = do
         let toThrow = bool falseThrow trueThrow
         return $ Monkey {_num = num, _item = items, _operation = op, _divisBy = divis, _toThrow = toThrow}
 
-
 doItem :: Int -> Monkey -> Int -> State (Map Int Monkey) ()
 doItem modBy (Monkey {..}) oneItem = ix newMonkey . item %= (++ [afterWorry])
             where
                 afterWorry = _operation oneItem `mod` modBy-- `div` 3
                 newMonkey =  _toThrow ((afterWorry `rem` _divisBy) == 0)
-
 
 doStep :: Int -> Int -> State (Map Int Monkey) (Int, Int)
 doStep modBy num = do
@@ -67,15 +60,12 @@ doStep modBy num = do
         ix num . item .= []
         return (num, length $ monkey ^. item)
 
-
-
 solve monkeyList = product . take 2 . reverse . sort . M.elems $ M.fromListWith (+) (concat afterRounds)
         where   
             numMonkeys = length monkeyList
             monkeyMap = M.fromList . zipFrom 0 $ monkeyList
             modBy = productOf (traversed . divisBy) monkeyMap
             afterRounds = evalState (replicateM 10000 (traverse (doStep modBy) [0..(numMonkeys - 1)])) monkeyMap
-
 
 main = do
     input <- readFile "day11.txt" 
