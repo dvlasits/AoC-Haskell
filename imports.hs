@@ -74,3 +74,4 @@ import qualified Data.Graph.Inductive as G
 import Data.Vector (Vector, (!))
 import qualified Data.Vector as V
 import Text.Printf
+import Algorithm.Search
