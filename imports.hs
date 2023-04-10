@@ -75,3 +75,12 @@ import Data.Vector (Vector, (!))
 import qualified Data.Vector as V
 import Text.Printf
 import Algorithm.Search
+
+
+instance Num a => Num (a,a) where
+    (x,y) + (x', y') = (x+x', y+y')
+    (x,y) * (x', y') = (x*x', y*y')
+    abs (x, y) = (abs x, abs y)
+    fromInteger x = (fromIntegral x,fromIntegral x)
+    signum (x ,y) = (signum x, signum y)
+    negate (x, y) = (-x, -y)
