@@ -13,11 +13,11 @@ parseLine = do
 lookup' = fromJust .* flip lookup
 
 createInfo :: [(String, Int, [String])] -> ([(String, Int)], Map (String, String) Int)
-createInfo data' = (filter ((>0) . snd) flowRates, distanceMap)
+createInfo data' = (flowRates, distanceMap)
             where
-                flowRates = map (view _1 &&& view _2) data'
+                flowRates = filter ((>0) . snd) . map (view _1 &&& view _2) $ data'
                 adjacencyMatrix = map (view _1 &&& view _3) data'
-                pathPairs = [(x,y) | (x, _, _) <- data', (y, _,_) <- data', x /= y, x < y, allOf each (\x -> 0 < lookup' flowRates x || x == "AA") (x,y)]
+                pathPairs = [(x,y) | (x,_) <- ("AA", 0):flowRates, (y,_) <- ("AA",0):flowRates, x /= y, x < y]
                 distances = [id, over _1 swap] <*> (zip <*> map (\(start, end) -> length . fromJust $ bfs (lookup' adjacencyMatrix) (==end) start)) pathPairs
                 distanceMap = M.fromList distances
 
